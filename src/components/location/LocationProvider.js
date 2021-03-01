@@ -6,13 +6,13 @@ export const LocationProvider = (props) => {
   const [locations, setLocations] = useState([])
 
   const getLocations = () => {
-    fetch("http://localhost:8088/locations")
+    return fetch("http://localhost:8088/locations")
       .then(res => res.json())
       .then(setLocations)
   }
 
   const saveLocations = (locationObj) => {
-    fetch("http://localhost:8088/locations", {
+    return fetch("http://localhost:8088/locations", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
