@@ -1,6 +1,6 @@
 import React, { createContext, useState } from "react"
 
-export const customerContext = createContext()
+export const CustomerContext = createContext()
 
 export const CustomerProvider = (props) => {
   const [customers, setCustomers] = useState([])
@@ -23,10 +23,10 @@ export const CustomerProvider = (props) => {
   }
 
   return (
-    <customerContext.Provider value={{
+    <CustomerContext.Provider value={{
       customers, getCustomers
     }}>
       {props.children}
-    </customerContext.Provider>
+    </CustomerContext.Provider>
   )
 }
