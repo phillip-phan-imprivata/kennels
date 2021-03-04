@@ -3,14 +3,20 @@ import { LocationContext } from "./LocationProvider"
 import { LocationCard } from "./LocationCard"
 import "./Location.css"
 import { useHistory } from "react-router-dom"
+import {EmployeeContext} from "../employee/EmployeeProvider"
+import { AnimalContext } from "../animal/AnimalProvider"
 
 export const LocationList = () => {
   const {locations, getLocations} = useContext(LocationContext)
+  const {employees, getEmployees} = useContext(EmployeeContext)
+  const {animals, getAnimals} = useContext(AnimalContext)
 
   const history = useHistory()
 
   useEffect(() => {
-    getLocations()
+    getEmployees()
+    .then(getAnimals)
+    .then(getLocations)
   }, [])
 
   return (
@@ -21,7 +27,10 @@ export const LocationList = () => {
       </button>
       {
         locations.map(location => {
-          return <LocationCard key={location.id} location={location} />
+          const matchingEmployees = employees.filter(employee => employee.locationId === location.id)
+          const matchingAnimals = animals.filter(animal => animal.locationId === location.id)
+
+          return <LocationCard key={location.id} location={location} employees={matchingEmployees} animals={matchingAnimals} />
         })
       }
     </div>

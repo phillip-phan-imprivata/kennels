@@ -1,21 +1,33 @@
 import React, { useContext, useEffect, useState } from "react"
-import { useHistory } from "react-router-dom"
+import { useHistory, useParams } from "react-router-dom"
 import { LocationContext } from "../location/LocationProvider"
 import { EmployeeContext } from "./EmployeeProvider"
 
 export const EmployeeForm = () => {
   const {locations, getLocations} = useContext(LocationContext)
-  const {saveEmployees} = useContext(EmployeeContext)
+  const {saveEmployees, getEmployeeById, updateEmployee} = useContext(EmployeeContext)
 
   const [employee, setEmployee] = useState({
     name: "",
     locationId: 0
   })
 
+  const [isLoading, setIsLoading] = useState(true);
+
+  const {employeeId} = useParams()
   const history = useHistory()
 
   useEffect(() => {
     getLocations()
+    if (employeeId){
+      getEmployeeById(employeeId)
+      .then(employee => {
+        setEmployee(employee)
+        setIsLoading(false)
+      })
+    } else {
+      setIsLoading(false)
+    }
   }, [])
 
   const handleControlledInputChange = (event) => {
@@ -41,8 +53,20 @@ export const EmployeeForm = () => {
     if (locationId === 0){
       alert("You must choose a location!")
     } else {
-      saveEmployees(employee)
-      .then(history.push("/employees"))
+
+      setIsLoading(true)
+
+      if (employeeId){
+        updateEmployee({
+          id: employee.id,
+          name: employee.name,
+          locationId: parseInt(employee.locationId)
+        })
+        .then(() => history.push(`/employee/detail/${employee.id}`))
+      } else {
+        saveEmployees(employee)
+        .then(history.push("/employees"))
+      }
     }
   }
 
@@ -56,8 +80,8 @@ export const EmployeeForm = () => {
         </div>
         <div className="form-group">
           <label htmlFor="location">Location: </label>
-          <select defaultValue={employee.locationId} name="locationId" id="locationId" className="form-control" onChange={handleControlledInputChange}>
-            <option valut="0">Select a location...</option>
+          <select value={employee.locationId} name="locationId" id="locationId" className="form-control" onChange={handleControlledInputChange}>
+            <option value="0">Select a location...</option>
             {locations.map(location => (
               <option key={location.id} value={location.id}>
                 {location.name}
@@ -65,7 +89,12 @@ export const EmployeeForm = () => {
             ))}
           </select>
         </div>
-        <button className="btn" onClick={handleClickSaveEmployee}>
+        <button className="btn" 
+        disbaled={isLoading}
+        onClick={event => {
+          event.preventDefault()
+          handleClickSaveEmployee()
+          }}>
           Save Employee
         </button>
       </fieldset> 

@@ -1,11 +1,14 @@
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { LocationContext } from "./LocationProvider"
-import { useHistory } from "react-router-dom"
+import { useHistory, useParams } from "react-router-dom"
 
 export const LocationForm = () => {
-  const {saveLocations} = useContext(LocationContext)
+  const {saveLocations, getLocationById, updateLocation} = useContext(LocationContext)
 
+  const {locationId} = useParams()
   const history = useHistory()
+
+  const [isLoading, setIsLoading] = useState(true)
 
   const [location, setLocation] = useState({
     name: "",
@@ -22,23 +25,51 @@ export const LocationForm = () => {
     setLocation(newLocation)
   }
 
+  console.log(locationId)
   const handleClickSaveLocation = (event) => {
-    saveLocations(location)
-    .then(history.push("/locations"))
+    setIsLoading(true)
+    if (locationId){
+      updateLocation({
+        id: location.id,
+        name: location.name,
+        address: location.address
+      })
+      .then(() => history.push(`/locations/detail/${location.id}`))
+    } else {
+      saveLocations(location)
+      .then(() => history.push("/locations"))
+    }
   }
+  
+  useEffect(() => {
+    if (locationId){
+      getLocationById(locationId)
+      .then(res => {
+        setLocation(res)
+        setIsLoading(false)
+      })
+    } else {
+      setIsLoading(false)
+    }
+  }, [])
 
   return (
     <form className="locationForm">
       <h2 className="locationForm__title">Location Form</h2>
       <fieldset className="form-group">
         <label htmlFor="name">Name: </label>
-        <input type="text" id="name" onChange={handleControlledInputChange} autoFocus required placeholder="Location name..."></input>
+        <input type="text" id="name" onChange={handleControlledInputChange} value={location.name} autoFocus required placeholder="Location name..." />
       </fieldset>
       <fieldset className="form-group">
         <label htmlFor="address">Address: </label>
-        <input type="text" id="address" onChange={handleControlledInputChange} required placeholder="Location address..."></input>
+        <input type="text" id="address" onChange={handleControlledInputChange} value={location.address} required placeholder="Location address..." />
       </fieldset>
-      <button className="btn" onClick={handleClickSaveLocation}>
+      <button className="btn" 
+        disabled={isLoading}
+        onClick={event => {
+          event.preventDefault()
+          handleClickSaveLocation()
+        }}>
         Save Location
       </button>
     </form>
